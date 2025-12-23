@@ -2,9 +2,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user_role.dart';
-import 'student/student_home_page.dart';
-import 'teacher/teacher_home_page.dart';
-import 'admin/admin_home_page.dart';
 import '../widgets/bottom_nav.dart';
 
 class LoginPage extends StatefulWidget {
@@ -69,37 +66,66 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
-    setState(() => loading = true);
-
-    final user =
-        await AuthService().login(emailC.text.trim(), passC.text.trim());
-
-    setState(() => loading = false);
-
-    if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Login gagal")),
-      );
+    // Validasi input kosong
+    if (emailC.text.trim().isEmpty || passC.text.trim().isEmpty) {
+      _showErrorDialog("Email atau password tidak boleh kosong");
       return;
     }
 
-    // Setelah login, bungkus ke dalam bottom navigation yang role-aware
-    Widget home;
-    switch (user.role) {
-      case UserRole.student:
-        home = BottomNavBar(user: user);
-        break;
-      case UserRole.teacher:
-        home = BottomNavBar(user: user);
-        break;
-      case UserRole.admin:
-        home = BottomNavBar(user: user);
-        break;
-    }
+    setState(() => loading = true);
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => home),
+    try {
+      final user =
+          await AuthService().login(emailC.text.trim(), passC.text.trim());
+
+      setState(() => loading = false);
+
+      if (user == null) {
+        _showErrorDialog("Email atau password salah");
+        return;
+      }
+
+      // Setelah login, bungkus ke dalam bottom navigation yang role-aware
+      Widget home;
+      switch (user.role) {
+        case UserRole.student:
+          home = BottomNavBar(user: user);
+          break;
+        case UserRole.teacher:
+          home = BottomNavBar(user: user);
+          break;
+        case UserRole.admin:
+          home = BottomNavBar(user: user);
+          break;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => home),
+      );
+    } catch (e) {
+      setState(() => loading = false);
+      _showErrorDialog("Email atau password salah");
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Peringatan"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

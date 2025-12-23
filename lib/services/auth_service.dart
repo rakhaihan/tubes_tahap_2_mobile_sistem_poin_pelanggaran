@@ -30,7 +30,6 @@ class AuthService {
     return true;
   }
 
-  /// Register user (ONLY ADMIN BK SHOULD USE THIS)
   Future<User?> register({
     required String name,
     required String email,
@@ -62,17 +61,30 @@ class AuthService {
 
   /// Login
   Future<User?> login(String email, String password) async {
-    final result = await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      final result = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    final doc = await _db.collection('users').doc(result.user!.uid).get();
+      final doc = await _db.collection('users').doc(result.user!.uid).get();
 
-    if (!doc.exists) throw Exception("User tidak ditemukan di Firestore.");
+      if (!doc.exists) throw Exception("User tidak ditemukan di Firestore.");
 
-    _currentUser = User.fromJson(doc.data()!..['id'] = result.user!.uid);
-    return _currentUser;
+      _currentUser = User.fromJson(doc.data()!..['id'] = result.user!.uid);
+      return _currentUser;
+    } on fb.FirebaseAuthException catch (e) {
+      // Handle Firebase Auth errors
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-email' ||
+          e.code == 'invalid-credential') {
+        throw Exception("Email atau password salah");
+      }
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   /// Logout

@@ -40,6 +40,27 @@ class SanctionService {
   Future<void> deleteSanction(String id) async {
     await _col.doc(id).delete();
   }
+
+  /// Mendapatkan semua sanksi (once, bukan stream)
+  Future<List<Sanction>> fetchAll() async {
+    final snapshot = await _col.orderBy('minPoin').get();
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return Sanction.fromJson(data);
+    }).toList();
+  }
+
+  /// Mendapatkan sanksi berdasarkan poin
+  Future<Sanction?> getSanctionByPoints(int points) async {
+    final allSanctions = await fetchAll();
+    for (final sanction in allSanctions) {
+      if (points >= sanction.minPoin && points <= sanction.maxPoin) {
+        return sanction;
+      }
+    }
+    return null;
+  }
 }
 
 

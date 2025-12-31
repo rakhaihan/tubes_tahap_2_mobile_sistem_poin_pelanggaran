@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user_role.dart';
 import '../widgets/bottom_nav.dart';
+import '../services/fcm_service.dart';
+import '../services/fcm_token_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -83,6 +85,15 @@ class _LoginPageState extends State<LoginPage> {
       if (user == null) {
         _showErrorDialog("Email atau password salah");
         return;
+      }
+
+      // Simpan FCM token untuk siswa setelah login berhasil
+      if (user.role == UserRole.student) {
+        final fcmTokenService = FCMTokenService();
+        final fcmToken = await FCMService.getToken();
+        if (fcmToken != null) {
+          await fcmTokenService.saveTokenForUser(user.id, fcmToken, user.role);
+        }
       }
 
       // Setelah login, bungkus ke dalam bottom navigation yang role-aware

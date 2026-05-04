@@ -128,7 +128,7 @@ class _RekapPageState extends State<RekapPage> {
                 Expanded(
                   flex: 2,
                   child: DropdownButtonFormField<String>(
-                    value: _kelas,
+                    initialValue: _kelas,
                     decoration: const InputDecoration(
                       labelText: 'Kelas',
                       border: OutlineInputBorder(),
@@ -157,7 +157,7 @@ class _RekapPageState extends State<RekapPage> {
                 SizedBox(
                   width: 80,
                   child: DropdownButtonFormField<int>(
-                    value: _semester,
+                    initialValue: _semester,
                     decoration: const InputDecoration(
                       labelText: 'Semester',
                       border: OutlineInputBorder(),

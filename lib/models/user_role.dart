@@ -3,6 +3,7 @@ enum UserRole {
   student,
   teacher,
   admin,
+  parent,
 }
 
 extension UserRoleExt on UserRole {
@@ -14,6 +15,8 @@ extension UserRoleExt on UserRole {
         return "Guru";
       case UserRole.admin:
         return "Admin BK";
+      case UserRole.parent:
+        return "Orang Tua";
     }
   }
 
@@ -25,6 +28,8 @@ extension UserRoleExt on UserRole {
         return "teacher";
       case UserRole.admin:
         return "admin";
+      case UserRole.parent:
+        return "parent";
     }
   }
 
@@ -36,6 +41,9 @@ extension UserRoleExt on UserRole {
         return UserRole.teacher;
       case "admin":
         return UserRole.admin;
+      case "parent":
+      case "orangtua":
+        return UserRole.parent;
       default:
         return UserRole.student;
     }

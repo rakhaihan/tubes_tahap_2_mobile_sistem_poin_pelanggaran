@@ -26,8 +26,10 @@ class ViolationNotificationService {
       }
 
       final userData = userDoc.data()!;
-      final userRole = UserRoleExt.fromString(userData['role']?.toString());
-      
+      final userRole = UserRoleExt.fromString(
+        userData['role']?.toString() ?? '',
+      );
+
       // Hanya kirim notifikasi untuk siswa
       if (userRole != UserRole.student) {
         print('ℹ️ User is not a student, notification not sent');
@@ -36,7 +38,7 @@ class ViolationNotificationService {
 
       // Dapatkan FCM token siswa
       final fcmToken = await _fcmTokenService.getTokenForUser(studentId);
-      
+
       if (fcmToken == null || fcmToken.isEmpty) {
         print('⚠️ No FCM token found for student: $studentId');
         return;
@@ -44,7 +46,8 @@ class ViolationNotificationService {
 
       // Buat pesan notifikasi
       const String title = 'Pelanggaran Disetujui';
-      final String body = 'Pelanggaran Anda: "$violationDescription" telah disetujui oleh admin. Poin: $violationPoints';
+      final String body =
+          'Pelanggaran Anda: "$violationDescription" telah disetujui oleh admin. Poin: $violationPoints';
 
       // Kirim notifikasi menggunakan FCM REST API
       // Catatan: Untuk production, lebih baik menggunakan Cloud Functions
@@ -60,6 +63,29 @@ class ViolationNotificationService {
           'violationPoints': violationPoints.toString(),
         },
       );
+
+      // Jika siswa punya relasi orang tua, kirim juga notifikasi ke orang tua.
+      final linkedParentId = userData['linkedParentId']?.toString() ?? '';
+      if (linkedParentId.isNotEmpty) {
+        final parentToken = await _fcmTokenService.getTokenForUser(
+          linkedParentId,
+        );
+        if (parentToken != null && parentToken.isNotEmpty) {
+          await _sendFCMNotification(
+            token: parentToken,
+            title: 'Pelanggaran Siswa Disetujui',
+            body:
+                'Pelanggaran siswa $studentName: "$violationDescription" telah disetujui. Poin: $violationPoints',
+            data: {
+              'type': 'child_violation_approved',
+              'studentId': studentId,
+              'parentId': linkedParentId,
+              'violationDescription': violationDescription,
+              'violationPoints': violationPoints.toString(),
+            },
+          );
+        }
+      }
 
       print('✅ Notification sent to student: $studentName ($studentId)');
     } catch (e) {
@@ -83,7 +109,9 @@ class ViolationNotificationService {
 
     if (serverKey == 'YOUR_SERVER_KEY_HERE') {
       print('⚠️ FCM Server Key not configured. Notification not sent.');
-      print('💡 Please configure server key or use Cloud Functions to send notifications');
+      print(
+        '💡 Please configure server key or use Cloud Functions to send notifications',
+      );
       return;
     }
 
@@ -96,11 +124,7 @@ class ViolationNotificationService {
         },
         body: jsonEncode({
           'to': token,
-          'notification': {
-            'title': title,
-            'body': body,
-            'sound': 'default',
-          },
+          'notification': {'title': title, 'body': body, 'sound': 'default'},
           'data': data ?? {},
           'priority': 'high',
         }),
@@ -109,11 +133,12 @@ class ViolationNotificationService {
       if (response.statusCode == 200) {
         print('✅ FCM notification sent successfully');
       } else {
-        print('❌ FCM notification failed: ${response.statusCode} - ${response.body}');
+        print(
+          '❌ FCM notification failed: ${response.statusCode} - ${response.body}',
+        );
       }
     } catch (e) {
       print('❌ Error sending FCM notification: $e');
     }
   }
 }
-

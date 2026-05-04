@@ -6,10 +6,9 @@ import '../models/user_role.dart';
 class FCMTokenService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Menyimpan FCM token untuk user (hanya untuk siswa)
+  /// Menyimpan FCM token untuk user (siswa & orang tua)
   Future<void> saveTokenForUser(String userId, String? token, UserRole role) async {
-    if (role != UserRole.student) {
-      // Hanya simpan token untuk siswa
+    if (role != UserRole.student && role != UserRole.parent) {
       return;
     }
 
@@ -22,7 +21,7 @@ class FCMTokenService {
         'fcmToken': token,
         'fcmTokenUpdatedAt': FieldValue.serverTimestamp(),
       });
-      print('✅ FCM token saved for student: $userId');
+      print('✅ FCM token saved for user: $userId');
     } catch (e) {
       print('❌ Error saving FCM token: $e');
     }
@@ -55,4 +54,7 @@ class FCMTokenService {
     }
   }
 }
+
+
+
 

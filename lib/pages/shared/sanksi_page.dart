@@ -23,6 +23,7 @@ class _SanctionPageState extends State<SanctionPage> {
 
   bool get _isAdmin => widget.user.role == UserRole.admin;
   bool get _isStudent => widget.user.role == UserRole.student;
+  bool get _isParent => widget.user.role == UserRole.parent;
 
   void _openSanctionForm({Sanction? sanction}) {
     final tingkatCtrl = TextEditingController(text: sanction?.tingkat ?? '');
@@ -221,8 +222,17 @@ class _SanctionPageState extends State<SanctionPage> {
             return const Center(child: Text('Belum ada data sanksi.'));
           }
 
-          // Jika student, filter sanksi yang relevan untuk mereka saja
-          if (_isStudent) {
+          // Jika student/orang tua, filter sanksi yang relevan untuk siswa terkait
+          if (_isStudent || _isParent) {
+            final targetStudentId = _isParent
+                ? (widget.user.linkedStudentId ?? '')
+                : widget.user.id;
+            if (targetStudentId.isEmpty) {
+              return const Center(
+                child: Text('Akun orang tua belum terhubung ke siswa.'),
+              );
+            }
+
             return FutureBuilder<Map<String, int>>(
               future: _computeTotalPointsPerStudent(),
               builder: (context, ptsSnap) {
@@ -236,7 +246,7 @@ class _SanctionPageState extends State<SanctionPage> {
                 }
 
                 final totals = ptsSnap.data ?? {};
-                final studentPoints = totals[widget.user.id] ?? 0;
+                final studentPoints = totals[targetStudentId] ?? 0;
 
                 // Filter sanksi yang sesuai dengan poin student
                 final relevantSanctions = allSanctions.where((s) {
@@ -252,7 +262,9 @@ class _SanctionPageState extends State<SanctionPage> {
                             size: 64, color: Colors.green),
                         const SizedBox(height: 16),
                         Text(
-                          'Anda tidak masuk ke dalam kategori sanksi',
+                          _isParent
+                              ? 'Siswa terkait belum masuk kategori sanksi'
+                              : 'Anda tidak masuk ke dalam kategori sanksi',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -261,7 +273,9 @@ class _SanctionPageState extends State<SanctionPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Total poin Anda: $studentPoints',
+                          _isParent
+                              ? 'Total poin siswa terkait: $studentPoints'
+                              : 'Total poin Anda: $studentPoints',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey[600],
@@ -322,20 +336,28 @@ class _SanctionPageState extends State<SanctionPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Status Sanksi Anda',
+                                  'Status Sanksi',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
-                                ListTile(
-                                  dense: true,
-                                  contentPadding: EdgeInsets.zero,
-                                  leading: const Icon(Icons.person, size: 20),
-                                  title: Text(widget.user.name),
-                                  subtitle: Text(
-                                    'Kelas: ${widget.user.kelas ?? '-'} • Poin: $studentPoints',
-                                  ),
+                                FutureBuilder<User?>(
+                                  future: _isParent
+                                      ? _userService.getStudentById(targetStudentId)
+                                      : Future.value(widget.user),
+                                  builder: (context, linkedSnap) {
+                                    final student = linkedSnap.data;
+                                    return ListTile(
+                                      dense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: const Icon(Icons.person, size: 20),
+                                      title: Text(student?.name ?? '-'),
+                                      subtitle: Text(
+                                        'Kelas: ${student?.kelas ?? '-'} • Poin: $studentPoints',
+                                      ),
+                                    );
+                                  },
                                 ),
                               ],
                             ),
@@ -350,8 +372,8 @@ class _SanctionPageState extends State<SanctionPage> {
           }
 
           // Untuk admin/teacher: tampilkan semua sanksi dengan semua murid
-          return FutureBuilder<List<User>>(
-            future: _userService.fetchAllStudents(),
+          return StreamBuilder<List<User>>(
+            stream: _userService.streamAllStudents(),
             builder: (context, stuSnap) {
               if (stuSnap.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
@@ -468,7 +490,7 @@ class _SanctionPageState extends State<SanctionPage> {
                                           'Kelas: ${u.kelas ?? '-'} • Poin: $pts',
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
                                 ],
                               ),
                             ),

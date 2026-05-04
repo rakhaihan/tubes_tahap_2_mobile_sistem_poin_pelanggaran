@@ -36,27 +36,60 @@ class AuthService {
     required String password,
     required UserRole role,
     String? kelas,
+    String? linkedStudentId,
   }) async {
-    final result = await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    try {
+      final result = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-    await _db.collection('users').doc(result.user!.uid).set({
-      'id': result.user!.uid,
-      'name': name,
-      'email': email,
-      'role': role.raw,
-      'kelas': kelas,
-    });
+      final uid = result.user!.uid;
 
-    return User(
-      id: result.user!.uid,
-      name: name,
-      email: email,
-      role: role,
-      kelas: kelas,
-    );
+      final userData = <String, dynamic>{
+        'id': uid,
+        'name': name,
+        'email': email,
+        'role': role.raw,
+        'kelas': kelas,
+        'createdAt': FieldValue.serverTimestamp(),
+      };
+      if (role == UserRole.parent) {
+        userData['linkedStudentId'] = linkedStudentId;
+      }
+
+      await _db.collection('users').doc(uid).set(userData);
+
+      // Pastikan relasi one-to-one orang tua <-> siswa tersimpan dua arah.
+      if (role == UserRole.parent &&
+          linkedStudentId != null &&
+          linkedStudentId.isNotEmpty) {
+        await _db.collection('users').doc(linkedStudentId).update({
+          'linkedParentId': uid,
+        });
+      }
+
+      _currentUser = User(
+        id: uid,
+        name: name,
+        email: email,
+        role: role,
+        kelas: kelas,
+        linkedStudentId: role == UserRole.parent ? linkedStudentId : null,
+      );
+      return _currentUser;
+    } on fb.FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        throw Exception('Email sudah terdaftar');
+      }
+      if (e.code == 'weak-password') {
+        throw Exception('Password terlalu lemah');
+      }
+      if (e.code == 'invalid-email') {
+        throw Exception('Format email tidak valid');
+      }
+      rethrow;
+    }
   }
 
   /// Login
@@ -97,4 +130,5 @@ class AuthService {
   bool isStudent() => _currentUser?.role == UserRole.student;
   bool isTeacher() => _currentUser?.role == UserRole.teacher;
   bool isAdmin() => _currentUser?.role == UserRole.admin;
+  bool isParent() => _currentUser?.role == UserRole.parent;
 }

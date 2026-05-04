@@ -31,27 +31,11 @@ class _TeacherInputViolationPageState extends State<TeacherInputViolationPage> {
   EvidenceType? evidenceType;
   String? evidenceUrl;
 
-  List<User> students = [];
   bool loading = false;
-
   @override
   void initState() {
     super.initState();
-    loadStudents();
-    selectedOption =
-        violationOptions.first; // default "Pilih Jenis Pelanggaran"
-  }
-
-  Future<void> loadStudents() async {
-    final kelas = widget.teacher.kelas;
-    if (kelas == null || kelas.isEmpty) {
-      students = [];
-      setState(() {});
-      return;
-    }
-    final snapshot = await _userService.getStudentsByClass(kelas).first;
-    students = snapshot;
-    setState(() {});
+    selectedOption = violationOptions.first;
   }
 
   @override
@@ -60,78 +44,109 @@ class _TeacherInputViolationPageState extends State<TeacherInputViolationPage> {
       appBar: AppBar(title: const Text("Tambah Rekap Pelanggaran")),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            DropdownButton<User>(
-              isExpanded: true,
-              value: selectedStudent,
-              hint: const Text("Pilih Murid"),
-              items: students
-                  .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
-                  .toList(),
-              onChanged: (v) => setState(() => selectedStudent = v),
-            ),
+        child: StreamBuilder<List<User>>(
+          stream: _buildStudentStream(),
+          builder: (context, snapshot) {
+            final students = snapshot.data ?? [];
+            if (selectedStudent != null &&
+                students.every((s) => s.id != selectedStudent!.id)) {
+              selectedStudent = null;
+            }
 
-            const SizedBox(height: 12),
-
-            DropdownButton<ViolationOption>(
-              isExpanded: true,
-              value: selectedOption,
-              items: violationOptions.map((opt) {
-                return DropdownMenuItem(value: opt, child: Text(opt.label));
-              }).toList(),
-              onChanged: (opt) => setState(() => selectedOption = opt),
-            ),
-
-            // Tambahkan ini tepat di bawah dropdown
-            if (selectedOption != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(
-                  "Poin: ${selectedOption!.points}",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo,
-                  ),
-                ),
-              ),
-
-            const SizedBox(height: 16),
-            const Divider(),
-
-            Text(
-              "Upload Bukti:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-
-            Row(
+            return ListView(
               children: [
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: const Text("Foto"),
+                if (snapshot.connectionState == ConnectionState.waiting)
+                  const LinearProgressIndicator(),
+                DropdownButton<User>(
+                  isExpanded: true,
+                  value: selectedStudent,
+                  hint: const Text("Pilih Murid"),
+                  items: students
+                      .map(
+                        (s) => DropdownMenuItem(
+                          value: s,
+                          child: Text('${s.name} (${s.kelas ?? '-'})'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedStudent = v),
                 ),
-              ],
-            ),
-
-            if (evidenceUrl != null)
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: const Text("Bukti diunggah ✓"),
-              ),
-
-            const SizedBox(height: 24),
-
-            loading
-                ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: _submit,
-                    child: const Text("Kirim"),
+                if (snapshot.connectionState != ConnectionState.waiting &&
+                    students.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Belum ada murid di kelas ini'),
                   ),
-          ],
+
+                const SizedBox(height: 12),
+
+                DropdownButton<ViolationOption>(
+                  isExpanded: true,
+                  value: selectedOption,
+                  items: violationOptions.map((opt) {
+                    return DropdownMenuItem(value: opt, child: Text(opt.label));
+                  }).toList(),
+                  onChanged: (opt) => setState(() => selectedOption = opt),
+                ),
+
+                if (selectedOption != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      "Poin: ${selectedOption!.points}",
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 16),
+                const Divider(),
+
+                Text(
+                  "Upload Bukti:",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _pickImage,
+                      child: const Text("Foto"),
+                    ),
+                  ],
+                ),
+
+                if (evidenceUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: const Text("Bukti diunggah ✓"),
+                  ),
+
+                const SizedBox(height: 24),
+
+                loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : ElevatedButton(
+                        onPressed: _submit,
+                        child: const Text("Kirim"),
+                      ),
+              ],
+            );
+          },
         ),
       ),
     );
+  }
+
+  Stream<List<User>> _buildStudentStream() {
+    final kelas = widget.teacher.kelas;
+    if (kelas == null || kelas.isEmpty) {
+      return Stream.value(const <User>[]);
+    }
+    return _userService.getStudentsByClass(kelas);
   }
 
   Future<void> _pickImage() async {

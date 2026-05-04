@@ -35,7 +35,7 @@ class FCMService {
       String? token = await _messaging.getToken();
 
       if (token != null) {
-        print('\n' + '=' * 60);
+        print('\n${'=' * 60}');
         print('📱 FCM TOKEN:');
         print('=' * 60);
         print(token);
@@ -46,7 +46,7 @@ class FCMService {
 
         // Listen untuk token refresh
         _messaging.onTokenRefresh.listen((newToken) {
-          print('\n' + '=' * 60);
+          print('\n${'=' * 60}');
           print('🔄 FCM TOKEN REFRESHED:');
           print('=' * 60);
           print(newToken);
@@ -69,7 +69,7 @@ class FCMService {
     try {
       String? token = await _messaging.getToken();
       if (token != null) {
-        print('\n' + '=' * 60);
+        print('\n${'=' * 60}');
         print('📱 FCM TOKEN:');
         print('=' * 60);
         print(token);

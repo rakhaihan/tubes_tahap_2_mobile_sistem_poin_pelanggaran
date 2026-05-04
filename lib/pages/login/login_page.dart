@@ -5,6 +5,7 @@ import '../../models/user_role.dart';
 import '../admin/admin_home_page.dart';
 import '../teacher/teacher_home_page.dart';
 import '../student/student_home_page.dart';
+import '../../widgets/bottom_nav.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -42,6 +43,12 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => StudentHomePage(user: user)),
+          );
+          break;
+        case UserRole.parent:
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => BottomNavBar(user: user)),
           );
           break;
       }

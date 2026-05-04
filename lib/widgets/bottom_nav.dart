@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../models/user_role.dart';
 import '../pages/admin/admin_home_page.dart';
+import '../pages/parent/parent_home_page.dart';
 import '../pages/shared/dashboard_page.dart';
 import '../pages/shared/profile_page.dart';
 import '../pages/shared/sanksi_page.dart';
@@ -15,6 +16,7 @@ import '../pages/teacher/teacher_home_page.dart';
 /// - Siswa: Pelanggaran, Sanksi, Profil
 /// - Guru:  Siswa, Sanksi, Profil
 /// - Admin: Approval, Sanksi, Profil
+/// - Orang Tua: Anak, Sanksi, Profil
 class BottomNavBar extends StatefulWidget {
   final User user;
   const BottomNavBar({super.key, required this.user});
@@ -69,6 +71,13 @@ class _BottomNavBarState extends State<BottomNavBar> {
         homeItem = const BottomNavigationBarItem(
           icon: Icon(Icons.verified),
           label: 'Approval',
+        );
+        break;
+      case UserRole.parent:
+        homePage = ParentHomePage(user: widget.user);
+        homeItem = const BottomNavigationBarItem(
+          icon: Icon(Icons.family_restroom),
+          label: 'Anak',
         );
         break;
     }

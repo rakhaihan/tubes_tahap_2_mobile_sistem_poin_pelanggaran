@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/violation.dart';
 import '../models/violation_status.dart';
+import 'violation_notification_service.dart';
 
 class ViolationService {
   final _db = FirebaseFirestore.instance;
@@ -82,10 +83,35 @@ class ViolationService {
 
   /// Approve pelanggaran
   Future<void> approveViolation(String violationId) async {
+    // Ambil data violation sebelum di-approve untuk notifikasi
+    final violationDoc = await _db.collection('violations').doc(violationId).get();
+    if (!violationDoc.exists) return;
+    
+    final violationData = violationDoc.data()!;
+    final studentId = violationData['studentId']?.toString() ?? '';
+    final studentName = violationData['studentName']?.toString() ?? '';
+    final violationDescription = violationData['description']?.toString() ?? '';
+    final violationPoints = (violationData['points'] as num?)?.toInt() ?? 0;
+    
+    // Update status violation
     await _db.collection('violations').doc(violationId).update({
       'status': ViolationStatus.approved.name,
       'approvedAt': FieldValue.serverTimestamp(),
     });
+
+    // Kirim notifikasi ke siswa saat pelanggaran di-approve
+    if (studentId.isNotEmpty) {
+      final notificationService = ViolationNotificationService();
+      // Panggil dengan delay kecil untuk memastikan update sudah selesai
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        await notificationService.sendViolationApprovalNotification(
+          studentId: studentId,
+          studentName: studentName,
+          violationDescription: violationDescription,
+          violationPoints: violationPoints,
+        );
+      });
+    }
   }
 
   /// Reject pelanggaran

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import '../../services/violation_service.dart';
 import '../../models/violation.dart';
-import '../../models/violation_status.dart';
 
 class ViolationApprovalPage extends StatelessWidget {
   const ViolationApprovalPage({super.key});

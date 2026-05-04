@@ -32,6 +32,14 @@ class UserService {
     return User.fromJson(data);
   }
 
+  Future<User?> getUserById(String id) async {
+    if (id.isEmpty) return null;
+    final doc = await _db.collection('users').doc(id).get();
+    if (!doc.exists) return null;
+    final data = doc.data()!..['id'] = doc.id;
+    return User.fromJson(data);
+  }
+
   /// Ambil semua guru
   Stream<List<User>> getTeachers() {
     return _db
@@ -58,5 +66,45 @@ class UserService {
       data['id'] = doc.id;
       return User.fromJson(data);
     }).toList();
+  }
+
+  /// Ambil murid berdasarkan email untuk proses tautkan akun orang tua.
+  Future<User?> getStudentByEmail(String email) async {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail.isEmpty) return null;
+
+    final snapshot = await _db
+        .collection('users')
+        .where('email', isEqualTo: normalizedEmail)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isEmpty) return null;
+
+    final doc = snapshot.docs.first;
+    final data = doc.data();
+    final role = (data['role'] ?? '').toString().toLowerCase();
+    if (role != 'student') return null;
+
+    data['id'] = doc.id;
+    return User.fromJson(data);
+  }
+
+  Stream<List<User>> streamAllStudents() {
+    return _db
+        .collection('users')
+        .where('role', isEqualTo: 'student')
+        .snapshots()
+        .map((snapshot) {
+          final students = snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return User.fromJson(data);
+          }).toList();
+          students.sort(
+            (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+          );
+          return students;
+        });
   }
 }

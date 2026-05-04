@@ -20,8 +20,9 @@ class _RekapPageState extends State<RekapPage> {
   bool _loading = false;
   List<Violation> _data = [];
   String? _errorMessage;
-  final TextEditingController _kelasController = TextEditingController();
-  final TextEditingController _semesterController = TextEditingController();
+
+  final List<String> _kelasOptions = ['XII RPL 1', 'XII RPL 2', 'XII RPL 3'];
+  final List<int> _semesterOptions = [1, 2];
 
   Future<void> _load() async {
     // Validasi input
@@ -67,13 +68,11 @@ class _RekapPageState extends State<RekapPage> {
         from: range.start,
         to: range.end,
       );
-      
+
       setState(() {
         _data = list;
         _loading = false;
-        if (list.isEmpty) {
-          _errorMessage = "Data tidak ditemukan";
-        }
+        _errorMessage = list.isEmpty ? "Data tidak ditemukan" : null;
       });
 
       // Tampilkan dialog jika data tidak ditemukan
@@ -113,16 +112,7 @@ class _RekapPageState extends State<RekapPage> {
   @override
   void initState() {
     super.initState();
-    _kelasController.text = _kelas;
-    _semesterController.text = _semester.toString();
     _load();
-  }
-
-  @override
-  void dispose() {
-    _kelasController.dispose();
-    _semesterController.dispose();
-    super.dispose();
   }
 
   @override
@@ -136,22 +126,60 @@ class _RekapPageState extends State<RekapPage> {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _kelasController,
-                    decoration: const InputDecoration(labelText: 'Kelas'),
-                    onChanged: (v) => setState(() => _kelas = v),
+                  flex: 2,
+                  child: DropdownButtonFormField<String>(
+                    initialValue: _kelas,
+                    decoration: const InputDecoration(
+                      labelText: 'Kelas',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    items: _kelasOptions.map((String kelas) {
+                      return DropdownMenuItem<String>(
+                        value: kelas,
+                        child: Text(kelas),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _kelas = newValue;
+                        });
+                      }
+                    },
+                    isExpanded: true,
                   ),
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: _semesterController,
-                    decoration: const InputDecoration(labelText: 'Semester'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) => setState(() {
-                      _semester = int.tryParse(v) ?? 1;
-                    }),
+                  width: 80,
+                  child: DropdownButtonFormField<int>(
+                    initialValue: _semester,
+                    decoration: const InputDecoration(
+                      labelText: 'Semester',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                    ),
+                    items: _semesterOptions.map((int semester) {
+                      return DropdownMenuItem<int>(
+                        value: semester,
+                        child: Text(semester.toString()),
+                      );
+                    }).toList(),
+                    onChanged: (int? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          _semester = newValue;
+                        });
+                      }
+                    },
+                    isExpanded: true,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -171,7 +199,9 @@ class _RekapPageState extends State<RekapPage> {
                         _errorMessage ?? 'Belum ada data',
                         style: TextStyle(
                           fontSize: 16,
-                          color: _errorMessage != null ? Colors.red : Colors.grey,
+                          color: _errorMessage != null
+                              ? Colors.red
+                              : Colors.grey,
                         ),
                       ),
                     )

@@ -8,6 +8,8 @@ class User {
   final String email;
   final UserRole role;
   final String? kelas; // Only for student & teacher
+  final String? linkedStudentId; // Only for parent
+  final String? linkedParentId; // Only for student
 
   User({
     required this.id,
@@ -15,6 +17,8 @@ class User {
     required this.email,
     required this.role,
     this.kelas,
+    this.linkedStudentId,
+    this.linkedParentId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -27,6 +31,8 @@ class User {
       email: json['email']?.toString() ?? '',
       role: UserRoleExt.fromString(json['role']?.toString() ?? ''),
       kelas: json['kelas']?.toString(),
+      linkedStudentId: json['linkedStudentId']?.toString(),
+      linkedParentId: json['linkedParentId']?.toString(),
     );
   }
 
@@ -36,5 +42,7 @@ class User {
     "email": email,
     "role": role.raw, // konsisten dengan fromString
     "kelas": kelas,
+    "linkedStudentId": linkedStudentId,
+    "linkedParentId": linkedParentId,
   };
 }

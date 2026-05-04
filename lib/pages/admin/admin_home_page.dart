@@ -13,9 +13,7 @@ class AdminHomePage extends StatelessWidget {
     final violationService = ViolationService();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Approval Pelanggaran'),
-      ),
+      appBar: AppBar(title: const Text('Approval Pelanggaran')),
       body: StreamBuilder<List<Violation>>(
         stream: violationService.getPendingApproval(),
         builder: (context, snapshot) {
@@ -59,10 +57,7 @@ class AdminHomePage extends StatelessWidget {
                       Text('Poin: ${v.points}'),
                       Text(
                         'Dibuat: ${v.createdAt.day}/${v.createdAt.month}/${v.createdAt.year}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                       ),
                     ],
                   ),

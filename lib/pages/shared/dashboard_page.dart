@@ -6,6 +6,7 @@ import '../../models/user_role.dart';
 import '../../models/violation.dart';
 import '../../models/violation_status.dart';
 import '../../services/violation_service.dart';
+import '../../services/user_service.dart';
 import '../admin/rekap_page.dart';
 import '../admin/violation_approval_page.dart';
 import '../teacher/teacher_input_violation_page.dart';
@@ -21,6 +22,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final AppState _appState = AppState.instance;
   final ViolationService _violationService = ViolationService();
+  final UserService _userService = UserService();
 
   @override
   void initState() {
@@ -46,9 +48,13 @@ class _DashboardPageState extends State<DashboardPage> {
     final isAdmin = widget.user.role == UserRole.admin;
     final isTeacher = widget.user.role == UserRole.teacher;
     final isStudent = widget.user.role == UserRole.student;
+    final isParent = widget.user.role == UserRole.parent;
 
     if (isStudent) {
       return _buildStudentDashboard();
+    }
+    if (isParent) {
+      return _buildParentDashboard();
     }
 
     return Scaffold(
@@ -125,6 +131,76 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildParentDashboard() {
+    final linkedStudentId = widget.user.linkedStudentId ?? '';
+    if (linkedStudentId.isEmpty) {
+      return const Scaffold(
+        body: Center(child: Text('Akun orang tua belum terhubung ke siswa.')),
+      );
+    }
+
+    return FutureBuilder(
+      future: _userService.getStudentById(linkedStudentId),
+      builder: (context, studentSnap) {
+        if (studentSnap.connectionState == ConnectionState.waiting) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        }
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Dashboard')),
+          body: StreamBuilder<List<Violation>>(
+            stream: _violationService.getViolationsForStudent(linkedStudentId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
+
+              final violations = snapshot.data ?? [];
+              final approved = violations
+                  .where((v) => v.status == ViolationStatus.approved)
+                  .toList();
+              final totalPoints =
+                  approved.fold<int>(0, (sum, v) => sum + v.points);
+
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildGreeting(),
+                  const SizedBox(height: 16),
+                  _buildStudentSummary(
+                    totalViolations: approved.length,
+                    totalPoints: totalPoints,
+                  ),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Pelanggaran Anak',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  if (violations.isEmpty)
+                    const Text('Belum ada pelanggaran tercatat.')
+                  else
+                    ...violations.map(
+                      (v) => Card(
+                        child: ListTile(
+                          title: Text(v.description),
+                          subtitle:
+                              Text('${v.points} poin • Status: ${v.status.label}'),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

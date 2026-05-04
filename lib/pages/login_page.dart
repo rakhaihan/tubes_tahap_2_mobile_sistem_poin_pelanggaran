@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user_role.dart';
 import '../widgets/bottom_nav.dart';
+import '../services/fcm_service.dart';
+import '../services/fcm_token_service.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -58,6 +61,19 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: _login,
                       child: Text("Login"),
                     ),
+
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: loading
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const RegisterPage()),
+                        );
+                      },
+                child: const Text("Belum punya akun? Daftar"),
+              ),
             ],
           ),
         ),
@@ -78,6 +94,7 @@ class _LoginPageState extends State<LoginPage> {
       final user =
           await AuthService().login(emailC.text.trim(), passC.text.trim());
 
+      if (!mounted) return;
       setState(() => loading = false);
 
       if (user == null) {
@@ -85,6 +102,16 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
+      // Simpan FCM token untuk siswa/orang tua setelah login berhasil
+      if (user.role == UserRole.student || user.role == UserRole.parent) {
+        final fcmTokenService = FCMTokenService();
+        final fcmToken = await FCMService.getToken();
+        if (fcmToken != null) {
+          await fcmTokenService.saveTokenForUser(user.id, fcmToken, user.role);
+        }
+      }
+
+      if (!mounted) return;
       // Setelah login, bungkus ke dalam bottom navigation yang role-aware
       Widget home;
       switch (user.role) {
@@ -97,6 +124,9 @@ class _LoginPageState extends State<LoginPage> {
         case UserRole.admin:
           home = BottomNavBar(user: user);
           break;
+        case UserRole.parent:
+          home = BottomNavBar(user: user);
+          break;
       }
 
       Navigator.pushReplacement(
@@ -104,6 +134,7 @@ class _LoginPageState extends State<LoginPage> {
         MaterialPageRoute(builder: (_) => home),
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() => loading = false);
       _showErrorDialog("Email atau password salah");
     }

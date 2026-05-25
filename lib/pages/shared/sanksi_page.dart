@@ -36,7 +36,7 @@ class _SanctionPageState extends State<SanctionPage> {
     final maxCtrl = TextEditingController(
       text: sanction?.maxPoin.toString() ?? '',
     );
-    final tingkatFocus = FocusNode();
+
     final keteranganFocus = FocusNode();
     final minFocus = FocusNode();
     final maxFocus = FocusNode();
@@ -50,57 +50,40 @@ class _SanctionPageState extends State<SanctionPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Semantics(
-                  label: 'sanction_level_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanction_level_field'),
-                    controller: tingkatCtrl,
-                    focusNode: tingkatFocus,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(
-                      labelText: 'Tingkat (Ringan/Sedang/Berat)',
-                    ),
-                    onSubmitted: (_) => keteranganFocus.requestFocus(),
+                TextField(
+                  key: const ValueKey('sanksi_tingkat_field'),
+                  controller: tingkatCtrl,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => keteranganFocus.requestFocus(),
+                  decoration: const InputDecoration(
+                    labelText: 'Tingkat (Ringan/Sedang/Berat)',
                   ),
                 ),
-                Semantics(
-                  label: 'sanction_description_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanction_description_field'),
-                    controller: keteranganCtrl,
-                    focusNode: keteranganFocus,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Keterangan'),
-                    maxLines: 2,
-                    onSubmitted: (_) => minFocus.requestFocus(),
-                  ),
+                TextField(
+                  key: const ValueKey('sanksi_keterangan_field'),
+                  controller: keteranganCtrl,
+                  focusNode: keteranganFocus,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => minFocus.requestFocus(),
+                  decoration: const InputDecoration(labelText: 'Keterangan'),
+                  maxLines: 2,
                 ),
-                Semantics(
-                  label: 'sanction_min_points_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanction_min_points_field'),
-                    controller: minCtrl,
-                    focusNode: minFocus,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: 'Min Poin'),
-                    onSubmitted: (_) => maxFocus.requestFocus(),
-                  ),
+                TextField(
+                  key: const ValueKey('sanksi_min_poin_field'),
+                  controller: minCtrl,
+                  focusNode: minFocus,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => maxFocus.requestFocus(),
+                  decoration: const InputDecoration(labelText: 'Min Poin'),
                 ),
-                Semantics(
-                  label: 'sanction_max_points_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanction_max_points_field'),
-                    controller: maxCtrl,
-                    focusNode: maxFocus,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(labelText: 'Max Poin'),
-                  ),
+                TextField(
+                  key: const ValueKey('sanksi_max_poin_field'),
+                  controller: maxCtrl,
+                  focusNode: maxFocus,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  decoration: const InputDecoration(labelText: 'Max Poin'),
                 ),
               ],
             ),
@@ -168,16 +151,15 @@ class _SanctionPageState extends State<SanctionPage> {
           ],
         );
       },
-    ).whenComplete(() =>
+    ).whenComplete(() {
       tingkatCtrl.dispose();
       keteranganCtrl.dispose();
       minCtrl.dispose();
       maxCtrl.dispose();
-      tingkatFocus.dispose();
       keteranganFocus.dispose();
       minFocus.dispose();
       maxFocus.dispose();
-    );
+    });
   }
 
   void _confirmDelete(Sanction s) {

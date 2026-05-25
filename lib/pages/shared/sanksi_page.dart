@@ -50,55 +50,49 @@ class _SanctionPageState extends State<SanctionPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Semantics(
-                  label: 'sanksi_tingkat_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanksi_tingkat_field'),
-                    controller: tingkatCtrl,
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) => keteranganFocus.requestFocus(),
-                    decoration: const InputDecoration(
-                      labelText: 'Tingkat (Ringan/Sedang/Berat)',
-                    ),
+                TextField(
+                  key: const ValueKey('sanksi_tingkat_field'),
+                  controller: tingkatCtrl,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => keteranganFocus.requestFocus(),
+                  decoration: const InputDecoration(
+                    labelText: 'Tingkat (Ringan/Sedang/Berat)',
+                    hintText: 'sanksi_tingkat',
                   ),
                 ),
-                Semantics(
-                  label: 'sanksi_keterangan_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanksi_keterangan_field'),
-                    controller: keteranganCtrl,
-                    focusNode: keteranganFocus,
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) => minFocus.requestFocus(),
-                    decoration: const InputDecoration(labelText: 'Keterangan'),
-                    maxLines: 2,
+                TextField(
+                  key: const ValueKey('sanksi_keterangan_field'),
+                  controller: keteranganCtrl,
+                  focusNode: keteranganFocus,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => minFocus.requestFocus(),
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Keterangan',
+                    hintText: 'sanksi_keterangan',
                   ),
                 ),
-                Semantics(
-                  label: 'sanksi_min_poin_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanksi_min_poin_field'),
-                    controller: minCtrl,
-                    focusNode: minFocus,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    onSubmitted: (_) => maxFocus.requestFocus(),
-                    decoration: const InputDecoration(labelText: 'Min Poin'),
+                TextField(
+                  key: const ValueKey('sanksi_min_poin_field'),
+                  controller: minCtrl,
+                  focusNode: minFocus,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => maxFocus.requestFocus(),
+                  decoration: const InputDecoration(
+                    labelText: 'Min Poin',
+                    hintText: 'sanksi_min_poin',
                   ),
                 ),
-                Semantics(
-                  label: 'sanksi_max_poin_field',
-                  textField: true,
-                  child: TextField(
-                    key: const ValueKey('sanksi_max_poin_field'),
-                    controller: maxCtrl,
-                    focusNode: maxFocus,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(labelText: 'Max Poin'),
+                TextField(
+                  key: const ValueKey('sanksi_max_poin_field'),
+                  controller: maxCtrl,
+                  focusNode: maxFocus,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
+                  decoration: const InputDecoration(
+                    labelText: 'Max Poin',
+                    hintText: 'sanksi_max_poin',
                   ),
                 ),
               ],

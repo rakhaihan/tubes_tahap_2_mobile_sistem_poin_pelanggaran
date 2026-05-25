@@ -50,103 +50,109 @@ class _SanctionPageState extends State<SanctionPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  key: const ValueKey('sanksi_tingkat_field'),
-                  controller: tingkatCtrl,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) => keteranganFocus.requestFocus(),
-                  decoration: const InputDecoration(
-                    labelText: 'Tingkat (Ringan/Sedang/Berat)',
+                Semantics(
+                  label: 'sanksi_tingkat_field',
+                  textField: true,
+                  child: TextField(
+                    key: const ValueKey('sanksi_tingkat_field'),
+                    controller: tingkatCtrl,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => keteranganFocus.requestFocus(),
+                    decoration: const InputDecoration(
+                      labelText: 'Tingkat (Ringan/Sedang/Berat)',
+                    ),
                   ),
                 ),
-                TextField(
-                  key: const ValueKey('sanksi_keterangan_field'),
-                  controller: keteranganCtrl,
-                  focusNode: keteranganFocus,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) => minFocus.requestFocus(),
-                  decoration: const InputDecoration(labelText: 'Keterangan'),
-                  maxLines: 2,
+                Semantics(
+                  label: 'sanksi_keterangan_field',
+                  textField: true,
+                  child: TextField(
+                    key: const ValueKey('sanksi_keterangan_field'),
+                    controller: keteranganCtrl,
+                    focusNode: keteranganFocus,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => minFocus.requestFocus(),
+                    decoration: const InputDecoration(labelText: 'Keterangan'),
+                    maxLines: 2,
+                  ),
                 ),
-                TextField(
-                  key: const ValueKey('sanksi_min_poin_field'),
-                  controller: minCtrl,
-                  focusNode: minFocus,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.next,
-                  onSubmitted: (_) => maxFocus.requestFocus(),
-                  decoration: const InputDecoration(labelText: 'Min Poin'),
+                Semantics(
+                  label: 'sanksi_min_poin_field',
+                  textField: true,
+                  child: TextField(
+                    key: const ValueKey('sanksi_min_poin_field'),
+                    controller: minCtrl,
+                    focusNode: minFocus,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.next,
+                    onSubmitted: (_) => maxFocus.requestFocus(),
+                    decoration: const InputDecoration(labelText: 'Min Poin'),
+                  ),
                 ),
-                TextField(
-                  key: const ValueKey('sanksi_max_poin_field'),
-                  controller: maxCtrl,
-                  focusNode: maxFocus,
-                  keyboardType: TextInputType.number,
-                  textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(labelText: 'Max Poin'),
+                Semantics(
+                  label: 'sanksi_max_poin_field',
+                  textField: true,
+                  child: TextField(
+                    key: const ValueKey('sanksi_max_poin_field'),
+                    controller: maxCtrl,
+                    focusNode: maxFocus,
+                    keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(labelText: 'Max Poin'),
+                  ),
                 ),
               ],
             ),
           ),
           actions: [
-            Semantics(
-              label: 'sanction_cancel_button',
-              button: true,
-              child: TextButton(
-                key: const ValueKey('sanction_cancel_button'),
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Batal'),
-              ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
             ),
-            Semantics(
-              label: 'sanction_save_button',
-              button: true,
-              child: ElevatedButton(
-                key: const ValueKey('sanction_save_button'),
-                onPressed: () async {
-                  final tingkat = tingkatCtrl.text.trim();
-                  final keterangan = keteranganCtrl.text.trim();
-                  final min = int.tryParse(minCtrl.text) ?? -1;
-                  final max = int.tryParse(maxCtrl.text) ?? -1;
+            ElevatedButton(
+              onPressed: () async {
+                final tingkat = tingkatCtrl.text.trim();
+                final keterangan = keteranganCtrl.text.trim();
+                final min = int.tryParse(minCtrl.text) ?? -1;
+                final max = int.tryParse(maxCtrl.text) ?? -1;
 
-                  if (tingkat.isEmpty ||
-                      keterangan.isEmpty ||
-                      min < 0 ||
-                      max < 0 ||
-                      min > max) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Periksa input sanksi')),
-                    );
-                    return;
-                  }
+                if (tingkat.isEmpty ||
+                    keterangan.isEmpty ||
+                    min < 0 ||
+                    max < 0 ||
+                    min > max) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Periksa input sanksi')),
+                  );
+                  return;
+                }
 
-                  try {
-                    if (sanction == null) {
-                      final newSanction = Sanction(
-                        tingkat: tingkat,
-                        keterangan: keterangan,
-                        minPoin: min,
-                        maxPoin: max,
-                      );
-                      await _service.addSanction(newSanction);
-                    } else {
-                      final updated = sanction.copyWith(
-                        tingkat: tingkat,
-                        keterangan: keterangan,
-                        minPoin: min,
-                        maxPoin: max,
-                      );
-                      await _service.updateSanction(updated);
-                    }
-                    if (mounted) Navigator.pop(context);
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Gagal menyimpan: $e')),
+                try {
+                  if (sanction == null) {
+                    final newSanction = Sanction(
+                      tingkat: tingkat,
+                      keterangan: keterangan,
+                      minPoin: min,
+                      maxPoin: max,
                     );
+                    await _service.addSanction(newSanction);
+                  } else {
+                    final updated = sanction.copyWith(
+                      tingkat: tingkat,
+                      keterangan: keterangan,
+                      minPoin: min,
+                      maxPoin: max,
+                    );
+                    await _service.updateSanction(updated);
                   }
-                },
-                child: const Text('Simpan'),
-              ),
+                  if (mounted) Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal menyimpan: $e')),
+                  );
+                }
+              },
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -230,27 +236,17 @@ class _SanctionPageState extends State<SanctionPage> {
         title: const Text('Sanksi & Pembinaan'),
         actions: [
           if (_isAdmin)
-            Semantics(
-              label: 'sanction_add_appbar_button',
-              button: true,
-              child: IconButton(
-                key: const ValueKey('sanction_add_appbar_button'),
-                icon: const Icon(Icons.add),
-                onPressed: () => _openSanctionForm(),
-                tooltip: 'Tambah sanksi',
-              ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => _openSanctionForm(),
+              tooltip: 'Tambah sanksi',
             ),
         ],
       ),
       floatingActionButton: _isAdmin
-          ? Semantics(
-              label: 'sanction_add_fab',
-              button: true,
-              child: FloatingActionButton(
-                key: const ValueKey('sanction_add_fab'),
-                onPressed: () => _openSanctionForm(),
-                child: const Icon(Icons.add),
-              ),
+          ? FloatingActionButton(
+              onPressed: () => _openSanctionForm(),
+              child: const Icon(Icons.add),
             )
           : null,
       body: StreamBuilder<List<Sanction>>(

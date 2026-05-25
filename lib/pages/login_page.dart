@@ -17,7 +17,27 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final emailC = TextEditingController();
   final passC = TextEditingController();
+  final emailFocus = FocusNode();
+  final passFocus = FocusNode();
   bool loading = false;
+
+  void _focusPasswordIfEmailFilled() {
+    final email = emailC.text.trim();
+    if (email.contains('@') && email.contains('.') && passC.text.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) passFocus.requestFocus();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    emailC.dispose();
+    passC.dispose();
+    emailFocus.dispose();
+    passFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,26 +60,49 @@ class _LoginPageState extends State<LoginPage> {
 
               SizedBox(height: 24),
 
-              TextField(
-                controller: emailC,
-                decoration: InputDecoration(labelText: "Email"),
+              Semantics(
+                label: 'login_email_field',
+                textField: true,
+                child: TextField(
+                  key: const ValueKey('login_email_field'),
+                  controller: emailC,
+                  focusNode: emailFocus,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(labelText: "Email"),
+                  onTap: _focusPasswordIfEmailFilled,
+                  onSubmitted: (_) => passFocus.requestFocus(),
+                ),
               ),
 
               SizedBox(height: 12),
 
-              TextField(
-                controller: passC,
-                obscureText: true,
-                decoration: InputDecoration(labelText: "Password"),
+              Semantics(
+                label: 'login_password_field',
+                textField: true,
+                child: TextField(
+                  key: const ValueKey('login_password_field'),
+                  controller: passC,
+                  focusNode: passFocus,
+                  obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  decoration: InputDecoration(labelText: "Password"),
+                  onSubmitted: (_) => _login(),
+                ),
               ),
 
               SizedBox(height: 20),
 
               loading
                   ? CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _login,
-                      child: Text("Login"),
+                  : Semantics(
+                      label: 'login_button',
+                      button: true,
+                      child: ElevatedButton(
+                        key: const ValueKey('login_button'),
+                        onPressed: _login,
+                        child: Text("Login"),
+                      ),
                     ),
 
               const SizedBox(height: 8),

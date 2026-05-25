@@ -16,6 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _email = TextEditingController();
   final _password = TextEditingController();
+  final _passwordFocus = FocusNode();
   final AuthService _auth = AuthService();
   bool _loading = false;
 
@@ -67,9 +68,24 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: _email, decoration: const InputDecoration(labelText: 'Email')),
+            TextField(
+              key: const ValueKey('email_field'),
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) => _passwordFocus.requestFocus(),
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
             const SizedBox(height: 8),
-            TextField(controller: _password, obscureText: true, decoration: const InputDecoration(labelText: 'Password')),
+            TextField(
+              key: const ValueKey('password_field'),
+              controller: _password,
+              focusNode: _passwordFocus,
+              obscureText: true,
+              textInputAction: TextInputAction.done,
+              onSubmitted: (_) => _submit(),
+              decoration: const InputDecoration(labelText: 'Password'),
+            ),
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,

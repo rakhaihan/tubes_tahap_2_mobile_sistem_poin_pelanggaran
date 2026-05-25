@@ -37,6 +37,10 @@ class _SanctionPageState extends State<SanctionPage> {
       text: sanction?.maxPoin.toString() ?? '',
     );
 
+    final keteranganFocus = FocusNode();
+    final minFocus = FocusNode();
+    final maxFocus = FocusNode();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -47,24 +51,38 @@ class _SanctionPageState extends State<SanctionPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
+                  key: const ValueKey('sanksi_tingkat_field'),
                   controller: tingkatCtrl,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => keteranganFocus.requestFocus(),
                   decoration: const InputDecoration(
                     labelText: 'Tingkat (Ringan/Sedang/Berat)',
                   ),
                 ),
                 TextField(
+                  key: const ValueKey('sanksi_keterangan_field'),
                   controller: keteranganCtrl,
+                  focusNode: keteranganFocus,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => minFocus.requestFocus(),
                   decoration: const InputDecoration(labelText: 'Keterangan'),
                   maxLines: 2,
                 ),
                 TextField(
+                  key: const ValueKey('sanksi_min_poin_field'),
                   controller: minCtrl,
+                  focusNode: minFocus,
                   keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => maxFocus.requestFocus(),
                   decoration: const InputDecoration(labelText: 'Min Poin'),
                 ),
                 TextField(
+                  key: const ValueKey('sanksi_max_poin_field'),
                   controller: maxCtrl,
+                  focusNode: maxFocus,
                   keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(labelText: 'Max Poin'),
                 ),
               ],
@@ -123,7 +141,15 @@ class _SanctionPageState extends State<SanctionPage> {
           ],
         );
       },
-    );
+    ).whenComplete(() {
+      tingkatCtrl.dispose();
+      keteranganCtrl.dispose();
+      minCtrl.dispose();
+      maxCtrl.dispose();
+      keteranganFocus.dispose();
+      minFocus.dispose();
+      maxFocus.dispose();
+    });
   }
 
   void _confirmDelete(Sanction s) {

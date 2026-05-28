@@ -20,7 +20,7 @@ void main() {
     // TC-FR-011-01
     // Path: START → 1 → 7(T) → 12 → END
     // Kondisi: tingkat.isEmpty == true → langsung gagal
-    test('TC-FR-011-01: Tingkat kosong → kembalikan pesan error', () {
+    test('TC-FR-011-01: Tingkat kosong → return pesan error', () {
       final result = validateSanctionInput(
         tingkat: '',
         keterangan: 'Peringatan',
@@ -33,7 +33,7 @@ void main() {
     // TC-FR-011-02
     // Path: START → 1 → 7(F) → 8(T) → 12 → END
     // Kondisi: tingkat ada, keterangan.isEmpty == true
-    test('TC-FR-011-02: Keterangan kosong → kembalikan pesan error', () {
+    test('TC-FR-011-02: Keterangan kosong → return pesan error', () {
       final result = validateSanctionInput(
         tingkat: 'Ringan',
         keterangan: '',
@@ -46,7 +46,7 @@ void main() {
     // TC-FR-011-03
     // Path: START → 1 → 7(F) → 8(F) → 9(T) → 12 → END
     // Kondisi: min < 0 == true
-    test('TC-FR-011-03: Min Poin negatif (-1) → kembalikan pesan error', () {
+    test('TC-FR-011-03: Min Poin negatif (-1) → return pesan error', () {
       final result = validateSanctionInput(
         tingkat: 'Ringan',
         keterangan: 'teguran',
@@ -59,7 +59,7 @@ void main() {
     // TC-FR-011-04
     // Path: START → 1 → 7(F) → 8(F) → 9(F) → 10(T) → 12 → END
     // Kondisi: max < 0 == true
-    test('TC-FR-011-04: Max Poin negatif (-5) → kembalikan pesan error', () {
+    test('TC-FR-011-04: Max Poin negatif (-5) → return pesan error', () {
       final result = validateSanctionInput(
         tingkat: 'Ringan',
         keterangan: 'teguran',
@@ -72,7 +72,7 @@ void main() {
     // TC-FR-011-05
     // Path: START → 1 → 7(F) → 8(F) → 9(F) → 10(F) → 11(T) → 12 → END
     // Kondisi: min > max == true
-    test('TC-FR-011-05: Min > Max (20 > 10) → kembalikan pesan error', () {
+    test('TC-FR-011-05: Min > Max (20 > 10) → return pesan error', () {
       final result = validateSanctionInput(
         tingkat: 'Ringan',
         keterangan: 'Peringatan',

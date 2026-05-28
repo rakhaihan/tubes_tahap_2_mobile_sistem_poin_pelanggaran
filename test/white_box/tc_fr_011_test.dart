@@ -12,10 +12,7 @@ import 'tc_fr_011_test.mocks.dart';
 
 @GenerateMocks([SanctionService])
 void main() {
-  // ─────────────────────────────────────────────────────────────────
-  // TC-FR-011-01 s/d TC-FR-011-05 : Uji logika validasi (unit test murni)
-  // Path diuji melalui validateSanctionInput()
-  // ─────────────────────────────────────────────────────────────────
+  
   group('Validasi Input Sanksi', () {
     // TC-FR-011-01
     // Path: START → 1 → 7(T) → 12 → END
@@ -94,9 +91,7 @@ void main() {
     });
   });
 
-  // ─────────────────────────────────────────────────────────────────
-  // TC-FR-011-06 s/d TC-FR-011-08 : Uji pemanggilan service (dengan mock)
-  // ─────────────────────────────────────────────────────────────────
+
   group('Pemanggilan Service Sanksi', () {
     late MockSanctionService mockService;
 

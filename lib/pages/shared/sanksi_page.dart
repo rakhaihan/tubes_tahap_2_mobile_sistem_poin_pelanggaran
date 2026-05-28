@@ -7,17 +7,19 @@ import '../../services/sanction_service.dart';
 import '../../services/user_service.dart';
 import '../../services/violation_service.dart';
 import '../../models/violation_status.dart';
+import '../../utils/sanction_validator.dart';
 
 class SanctionPage extends StatefulWidget {
   final User user;
-  const SanctionPage({super.key, required this.user});
+  final SanctionService? sanctionService; // injectable untuk testing
+  const SanctionPage({super.key, required this.user, this.sanctionService});
 
   @override
   State<SanctionPage> createState() => _SanctionPageState();
 }
 
 class _SanctionPageState extends State<SanctionPage> {
-  final _service = SanctionService();
+  late final _service = widget.sanctionService ?? SanctionService();
   final _userService = UserService();
   final _violationService = ViolationService();
 
@@ -110,13 +112,15 @@ class _SanctionPageState extends State<SanctionPage> {
                 final min = int.tryParse(minCtrl.text) ?? -1;
                 final max = int.tryParse(maxCtrl.text) ?? -1;
 
-                if (tingkat.isEmpty ||
-                    keterangan.isEmpty ||
-                    min < 0 ||
-                    max < 0 ||
-                    min > max) {
+                final error = validateSanctionInput(
+                  tingkat: tingkat,
+                  keterangan: keterangan,
+                  min: min,
+                  max: max,
+                );
+                if (error != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Periksa input sanksi')),
+                    SnackBar(content: Text(error)),
                   );
                   return;
                 }
